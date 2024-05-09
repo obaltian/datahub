@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import Field, root_validator, validator
 
-from datahub.cli.cli_utils import get_url_and_token
+from datahub.cli.cli_utils import load_graph_config
 from datahub.configuration import config_loader
 from datahub.configuration.common import ConfigModel, DynamicTypedConfig
 from datahub.ingestion.graph.client import DatahubClientConfig
@@ -103,12 +103,13 @@ class PipelineConfig(ConfigModel):
     @root_validator(pre=True)
     def default_sink_is_datahub_rest(cls, values: Dict[str, Any]) -> Any:
         if "sink" not in values:
-            gms_host, gms_token = get_url_and_token()
+            config = load_graph_config()
+            # update this
             default_sink_config = {
                 "type": "datahub-rest",
                 "config": {
-                    "server": gms_host,
-                    "token": gms_token,
+                    "server": config.server,
+                    "token": config.token,
                 },
             }
             # resolve env variables if present
