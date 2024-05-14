@@ -5,6 +5,7 @@ from typing import Dict, Iterable, List
 from avrogen.dict_wrapper import DictWrapper
 
 from datahub.cli import cli_utils
+from datahub.ingestion.graph.client import get_default_graph, DataHubGraph, RelatedEntity
 from datahub.emitter.mce_builder import Aspect
 from datahub.emitter.mcp import MetadataChangeProposalWrapper
 from datahub.metadata.schema_classes import (
@@ -263,29 +264,25 @@ def clone_aspect(
                 log.debug(f"did not find aspect {a} in response, continuing...")
 
 
-def get_incoming_relationships(urn: str) -> Iterable[Dict]:
-    yield from cli_utils.get_incoming_relationships(
-        urn,
-        types=[
-            "DownstreamOf",
-            "Consumes",
-            "Produces",
-            "ForeignKeyToDataset",
-            "DerivedFrom",
-            "IsPartOf",
-        ],
-    )
+def get_incoming_relationships(urn: str) -> Iterable[RelatedEntity]:
+    client = get_default_graph()
+    yield from client.get_related_entities(entity_urn=urn, relationship_types=[
+        "DownstreamOf",
+        "Consumes",
+        "Produces",
+        "ForeignKeyToDataset",
+        "DerivedFrom",
+        "IsPartOf",
+    ], direction=DataHubGraph.RelationshipDirection.INCOMING)
 
 
-def get_outgoing_relationships(urn: str) -> Iterable[Dict]:
-    yield from cli_utils.get_outgoing_relationships(
-        urn,
-        types=[
-            "DownstreamOf",
-            "Consumes",
-            "Produces",
-            "ForeignKeyToDataset",
-            "DerivedFrom",
-            "IsPartOf",
-        ],
-    )
+def get_outgoing_relationships(urn: str) -> Iterable[RelatedEntity]:
+    client = get_default_graph()
+    yield from client.get_related_entities(entity_urn=urn, relationship_types=[
+        "DownstreamOf",
+        "Consumes",
+        "Produces",
+        "ForeignKeyToDataset",
+        "DerivedFrom",
+        "IsPartOf",
+    ], direction=DataHubGraph.RelationshipDirection.OUTGOING)

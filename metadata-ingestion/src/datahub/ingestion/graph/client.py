@@ -1,3 +1,5 @@
+import os
+import click
 import contextlib
 import enum
 import functools
@@ -23,9 +25,11 @@ from typing import (
 
 from avro.schema import RecordSchema
 from deprecated import deprecated
+from requests.sessions import Session
 from requests.models import HTTPError
+from pydantic import BaseModel, ValidationError
 
-from datahub.cli.cli_utils import load_graph_config
+from datahub.cli import config_utils
 from datahub.configuration.common import ConfigModel, GraphError, OperationalError
 from datahub.emitter.aspect import TIMESERIES_ASPECT_MAP
 from datahub.emitter.mce_builder import DEFAULT_ENV, Aspect
@@ -78,6 +82,8 @@ logger = logging.getLogger(__name__)
 _MISSING_SERVER_ID = "missing"
 _GRAPH_DUMMY_RUN_ID = "__datahub-graph-client"
 
+ENV_METADATA_HOST_URL = "DATAHUB_GMS_URL"
+ENV_METADATA_HOST = "DATAHUB_GMS_HOST"
 
 class DatahubClientConfig(ConfigModel):
     """Configuration class for holding connectivity to datahub gms"""
@@ -91,7 +97,6 @@ class DatahubClientConfig(ConfigModel):
     ca_certificate_path: Optional[str] = None
     client_certificate_path: Optional[str] = None
     disable_ssl_verification: bool = False
-
 
 # Alias for backwards compatibility.
 # DEPRECATION: Remove in v0.10.2.
@@ -541,9 +546,8 @@ class DataHubGraph(DatahubRestEmitter):
     def _aspect_count_endpoint(self):
         return f"{self.config.server}/aspects?action=getCount"
 
-    @property
-    def _session(self):
-        return self._session
+    def _session(self) -> Session:
+        return super()._session
 
     def get_domain_urn_by_name(self, domain_name: str) -> Optional[str]:
         """Retrieve a domain urn based on its name. Returns None if there is no match found"""
@@ -1185,7 +1189,65 @@ class DataHubGraph(DatahubRestEmitter):
 
 
 def get_default_graph() -> DataHubGraph:
-    graph_config = load_graph_config()
+    graph_config = load_client_config()
     graph = DataHubGraph(graph_config)
     graph.test_connection()
     return graph
+
+class DatahubConfig(BaseModel):
+    gms: DatahubClientConfig
+
+def load_client_config() -> DatahubClientConfig:
+    try:
+        ensure_datahub_config()
+        client_config_dict = config_utils.get_client_config(as_dict=True)
+        datahub_config = DatahubConfig.parse_obj(client_config_dict).gms
+        return datahub_config
+    except ValidationError as e:
+        click.echo(
+            f"Received error, please check your {CONDENSED_DATAHUB_CONFIG_PATH}"
+        )
+        click.echo(e, err=True)
+        sys.exit(1)
+
+    # If config does not exist, create a default one.
+    if not datahub_config:
+        config = DatahubClientConfig()
+
+    # Override gms & token configs if specified.
+    if len(config_override.keys()) > 0:
+        config.gms_host = config_override.get(ENV_METADATA_HOST_URL)
+        config.token = config_override.get(ENV_METADATA_TOKEN)
+    elif config_utils.should_skip_config():
+        gms_host_env, gms_token_env = get_details_from_env()
+        config.gms_host = gms_host_env
+        config.token = gms_token_env
+
+    return config
+
+def ensure_datahub_config() -> None:
+    if not os.path.isfile(config_utils.DATAHUB_CONFIG_PATH):
+        click.secho(
+            f"No {config_utils.CONDENSED_DATAHUB_CONFIG_PATH} file found, generating one for you...",
+            bold=True,
+        )
+        write_gms_config(config_utils.DEFAULT_GMS_HOST, None)
+
+def write_gms_config(
+        host: str, token: Optional[str], merge_with_previous: bool = True
+) -> None:
+    config = DatahubConfig(gms=DatahubClientConfig(server=host, token=token))
+    if merge_with_previous:
+        try:
+            previous_config = config_utils.get_client_config(as_dict=True)
+            assert isinstance(previous_config, dict)
+        except Exception as e:
+            # ok to fail on this
+            previous_config = {}
+            logger.debug(
+                f"Failed to retrieve config from file {config_utils.DATAHUB_CONFIG_PATH}: {e}. This isn't fatal."
+            )
+        config_dict = {**previous_config, **config.dict()}
+    else:
+        config_dict = config.dict()
+    config_utils.persist_datahub_config(config_dict)

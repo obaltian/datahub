@@ -16,8 +16,8 @@ from datahub.cli.cli_utils import (
 from datahub.cli.config_utils import (
     DATAHUB_CONFIG_PATH,
     get_boolean_env_variable,
-    write_gms_config,
 )
+from datahub.ingestion.graph.client import write_gms_config
 from datahub.cli.delete_cli import delete
 from datahub.cli.docker_cli import docker
 from datahub.cli.exists_cli import exists
