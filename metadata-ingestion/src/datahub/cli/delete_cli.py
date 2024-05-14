@@ -138,8 +138,11 @@ def by_registry(
             unsafe_aspects,
             unsafe_entity_count,
             unsafe_entities,
-        ) = cli_utils.post_rollback_endpoint(client._session, client.config.server,
-            registry_delete, "/entities?action=deleteAll"
+        ) = cli_utils.post_rollback_endpoint(
+            client._session,
+            client.config.server,
+            registry_delete,
+            "/entities?action=deleteAll",
         )
 
     if not dry_run:

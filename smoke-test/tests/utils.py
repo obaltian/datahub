@@ -6,7 +6,11 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Tuple
 
 from datahub.cli import cli_utils, env_utils
-from datahub.ingestion.graph.client import DatahubClientConfig, DataHubGraph, get_default_graph
+from datahub.ingestion.graph.client import (
+    DatahubClientConfig,
+    DataHubGraph,
+    get_default_graph,
+)
 from datahub.ingestion.run.pipeline import Pipeline
 from joblib import Parallel, delayed
 

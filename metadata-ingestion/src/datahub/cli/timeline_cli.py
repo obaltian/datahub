@@ -8,8 +8,8 @@ import click
 from requests import Response
 from termcolor import colored
 
-from datahub.ingestion.graph.client import get_default_graph
 from datahub.emitter.mce_builder import dataset_urn_to_key, schema_field_urn_to_key
+from datahub.ingestion.graph.client import get_default_graph
 from datahub.telemetry import telemetry
 from datahub.upgrade import upgrade
 from datahub.utilities.urns.urn import Urn

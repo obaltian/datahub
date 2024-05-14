@@ -1,7 +1,7 @@
 import logging
 import random
 import uuid
-from typing import Any, Dict, List, Tuple, Union, Iterable
+from typing import Any, Dict, Iterable, List, Tuple, Union
 
 import click
 import progressbar
@@ -379,20 +379,25 @@ def migrate_containers(
 
 def get_containers_for_migration(env: str) -> List[Any]:
     client = get_default_graph()
-    containers_to_migrate = list(client.get_urns_by_filter(entity_types=["container"], env=env))
+    containers_to_migrate = list(
+        client.get_urns_by_filter(entity_types=["container"], env=env)
+    )
     containers = []
 
     increment = 20
     for i in range(0, len(containers_to_migrate), increment):
-        for container in batch_get_ids(client,
-            containers_to_migrate[i : i + increment]
+        for container in batch_get_ids(
+            client, containers_to_migrate[i : i + increment]
         ):
             log.debug(container)
             containers.append(container)
 
     return containers
 
-def batch_get_ids(client: DataHubGraph, ids: List[str],
+
+def batch_get_ids(
+    client: DataHubGraph,
+    ids: List[str],
 ) -> Iterable[Dict]:
     session = client._session
     gms_host = client.config.server
@@ -414,13 +419,11 @@ def batch_get_ids(client: DataHubGraph, ids: List[str],
             log.debug(f"yielding {x}")
             yield x
         assert (
-                entities_yielded == num_entities
+            entities_yielded == num_entities
         ), "Did not delete all entities, try running this command again!"
     else:
         log.error(f"Failed to execute batch get with {str(response.content)}")
         response.raise_for_status()
-
-
 
 
 def process_container_relationships(

@@ -43,7 +43,13 @@ def urn(ctx: Any, urn: Optional[str], aspect: List[str]) -> None:
 
     click.echo(
         json.dumps(
-            get_aspects_for_entity(client._session, client.config.server, entity_urn=urn, aspects=aspect, typed=False),
+            get_aspects_for_entity(
+                client._session,
+                client.config.server,
+                entity_urn=urn,
+                aspects=aspect,
+                typed=False,
+            ),
             sort_keys=True,
             indent=2,
         )

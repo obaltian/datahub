@@ -7,6 +7,7 @@ from datahub.metadata.schema_classes import (
     BrowsePathsV2Class,
     EditableDatasetPropertiesClass,
 )
+
 ingested_dataset_run_id = ""
 ingested_editable_run_id = ""
 
@@ -78,7 +79,6 @@ def test_rollback_editable():
 
     assert client.get_aspect(dataset_urn, BrowsePathsV2Class) is not None
 
-
     # Make editable change
     ingested_editable_run_id = ingest_file_via_rest(
         "tests/cli/cli_editable_test_data.json"
@@ -106,4 +106,3 @@ def test_rollback_editable():
 
     # But first ingestion aspects should not be present
     assert client.get_aspect(dataset_urn, BrowsePathsV2Class) is None
-

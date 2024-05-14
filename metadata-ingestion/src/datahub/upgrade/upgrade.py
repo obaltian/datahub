@@ -118,7 +118,7 @@ async def get_server_config(gms_url: str, token: str) -> dict:
 
 
 async def get_server_version_stats(
-    server: Optional[DataHubGraph] = None
+    server: Optional[DataHubGraph] = None,
 ) -> Tuple[Optional[str], Optional[Version], Optional[datetime]]:
     import aiohttp
 

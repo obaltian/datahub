@@ -1,10 +1,9 @@
-import os
-import click
 import contextlib
 import enum
 import functools
 import json
 import logging
+import os
 import textwrap
 import time
 from dataclasses import dataclass
@@ -23,11 +22,12 @@ from typing import (
     Union,
 )
 
+import click
 from avro.schema import RecordSchema
 from deprecated import deprecated
-from requests.sessions import Session
-from requests.models import HTTPError
 from pydantic import BaseModel, ValidationError
+from requests.models import HTTPError
+from requests.sessions import Session
 
 from datahub.cli import config_utils
 from datahub.configuration.common import ConfigModel, GraphError, OperationalError
@@ -85,6 +85,7 @@ _GRAPH_DUMMY_RUN_ID = "__datahub-graph-client"
 ENV_METADATA_HOST_URL = "DATAHUB_GMS_URL"
 ENV_METADATA_HOST = "DATAHUB_GMS_HOST"
 
+
 class DatahubClientConfig(ConfigModel):
     """Configuration class for holding connectivity to datahub gms"""
 
@@ -97,6 +98,7 @@ class DatahubClientConfig(ConfigModel):
     ca_certificate_path: Optional[str] = None
     client_certificate_path: Optional[str] = None
     disable_ssl_verification: bool = False
+
 
 # Alias for backwards compatibility.
 # DEPRECATION: Remove in v0.10.2.
@@ -1194,8 +1196,10 @@ def get_default_graph() -> DataHubGraph:
     graph.test_connection()
     return graph
 
+
 class DatahubConfig(BaseModel):
     gms: DatahubClientConfig
+
 
 def load_client_config() -> DatahubClientConfig:
     try:
@@ -1204,9 +1208,7 @@ def load_client_config() -> DatahubClientConfig:
         datahub_config = DatahubConfig.parse_obj(client_config_dict).gms
         return datahub_config
     except ValidationError as e:
-        click.echo(
-            f"Received error, please check your {CONDENSED_DATAHUB_CONFIG_PATH}"
-        )
+        click.echo(f"Received error, please check your {CONDENSED_DATAHUB_CONFIG_PATH}")
         click.echo(e, err=True)
         sys.exit(1)
 
@@ -1225,6 +1227,7 @@ def load_client_config() -> DatahubClientConfig:
 
     return config
 
+
 def ensure_datahub_config() -> None:
     if not os.path.isfile(config_utils.DATAHUB_CONFIG_PATH):
         click.secho(
@@ -1233,8 +1236,9 @@ def ensure_datahub_config() -> None:
         )
         write_gms_config(config_utils.DEFAULT_GMS_HOST, None)
 
+
 def write_gms_config(
-        host: str, token: Optional[str], merge_with_previous: bool = True
+    host: str, token: Optional[str], merge_with_previous: bool = True
 ) -> None:
     config = DatahubConfig(gms=DatahubClientConfig(server=host, token=token))
     if merge_with_previous:

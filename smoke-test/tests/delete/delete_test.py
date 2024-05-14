@@ -43,10 +43,18 @@ def test_setup():
 
     try:
         assert "institutionalMemory" not in get_aspects_for_entity(
-            session, gms_host, entity_urn=dataset_urn, aspects=["institutionalMemory"], typed=False
+            session,
+            gms_host,
+            entity_urn=dataset_urn,
+            aspects=["institutionalMemory"],
+            typed=False,
         )
         assert "editableDatasetProperties" not in get_aspects_for_entity(
-            session, gms_host, entity_urn=dataset_urn, aspects=["editableDatasetProperties"], typed=False
+            session,
+            gms_host,
+            entity_urn=dataset_urn,
+            aspects=["editableDatasetProperties"],
+            typed=False,
         )
     except Exception as e:
         delete_urns_from_file("tests/delete/cli_test_data.json")
@@ -57,7 +65,11 @@ def test_setup():
     ).config.run_id
 
     assert "institutionalMemory" in get_aspects_for_entity(
-        session, gms_host, entity_urn=dataset_urn, aspects=["institutionalMemory"], typed=False
+        session,
+        gms_host,
+        entity_urn=dataset_urn,
+        aspects=["institutionalMemory"],
+        typed=False,
     )
 
     yield
@@ -72,10 +84,18 @@ def test_setup():
     wait_for_writes_to_sync()
 
     assert "institutionalMemory" not in get_aspects_for_entity(
-        session, gms_host, entity_urn=dataset_urn, aspects=["institutionalMemory"], typed=False
+        session,
+        gms_host,
+        entity_urn=dataset_urn,
+        aspects=["institutionalMemory"],
+        typed=False,
     )
     assert "editableDatasetProperties" not in get_aspects_for_entity(
-        session, gms_host, entity_urn=dataset_urn, aspects=["editableDatasetProperties"], typed=False
+        session,
+        gms_host,
+        entity_urn=dataset_urn,
+        aspects=["editableDatasetProperties"],
+        typed=False,
     )
 
 

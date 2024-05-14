@@ -9,6 +9,7 @@ from typing import Optional, Union
 
 import click
 import yaml
+
 from datahub.cli.env_utils import get_boolean_env_variable
 
 log = logging.getLogger(__name__)
@@ -25,8 +26,10 @@ def persist_datahub_config(config: dict) -> None:
         yaml.dump(config, outfile, default_flow_style=False)
     return None
 
+
 def should_skip_config() -> bool:
     return get_boolean_env_variable(ENV_SKIP_CONFIG, False)
+
 
 def get_client_config(as_dict: bool = True) -> dict:
     with open(DATAHUB_CONFIG_PATH, "r") as stream:

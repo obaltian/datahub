@@ -548,7 +548,9 @@ def rollback(
         aspects_affected,
         unsafe_entity_count,
         unsafe_entities,
-    ) = cli_utils.post_rollback_endpoint(client._session, client.config.server, payload_obj, "/runs?action=rollback")
+    ) = cli_utils.post_rollback_endpoint(
+        client._session, client.config.server, payload_obj, "/runs?action=rollback"
+    )
 
     click.echo(
         "Rolling back deletes the entities created by a run and reverts the updated aspects"
